@@ -1,0 +1,7 @@
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\bin\Debug\MiniTerm.exe.config
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\bin\Debug\MiniTerm.exe
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\bin\Debug\MiniTerm.pdb
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\obj\Debug\MiniTerm.csproj.AssemblyReference.cache
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\obj\Debug\MiniTerm.csproj.CoreCompileInputs.cache
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\obj\Debug\MiniTerm.exe
+C:\terminal\samples\ConPTY\MiniTerm\MiniTerm\obj\Debug\MiniTerm.pdb
