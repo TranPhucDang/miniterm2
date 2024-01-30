@@ -1,5 +1,6 @@
 using Microsoft.Win32.SafeHandles;
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -10,6 +11,43 @@ using static MiniTerm.Native.ConsoleApi;
 
 namespace MiniTerm
 {
+
+
+    public class CustomFileStream : FileStream
+    {
+        public CustomFileStream (SafeFileHandle handle, FileAccess access) : base(handle, access)
+        {
+        }
+        public CustomFileStream(string path, FileMode mode) : base(path, mode)
+        {
+        }
+
+        public CustomFileStream(string path, FileMode mode, FileAccess access) : base(path, mode, access)
+        {
+        }
+
+        public CustomFileStream(string path, FileMode mode, FileAccess access, FileShare share) : base(path, mode, access, share)
+        {
+        }
+
+        // Override the CopyTo method
+        public void customCopyTo(Stream destination)
+        {
+            customInternalCopyTo(destination, 81920);
+        }
+
+        private void customInternalCopyTo(Stream destination, int bufferSize)
+        {
+            byte[] array = new byte[bufferSize];
+            int count;
+            while ((count = Read(array, 0, array.Length)) != 0)
+            {
+                destination.Write(array, 0, count);
+                string output1 = Encoding.ASCII.GetString(array, 0, array.Length);
+                Debug.Print("Line read: "+output1);
+            }
+        }
+    }
     /// <summary>
     /// The UI of the terminal. It's just a normal console window, but we're managing the input/output.
     /// In a "real" project this could be some other UI.
@@ -81,9 +119,10 @@ namespace MiniTerm
             using (var writer = new StreamWriter(new FileStream(inputWriteSide, FileAccess.Write)))
             {
                 ForwardCtrlC(writer);
+                /*ForwardEnter(writer);*/
                 writer.AutoFlush = true;
                 /*writer.WriteLine(@"cd \");*/
-                
+
                 while (true)
                 {
                     // send input character-by-character to the pipe
@@ -108,13 +147,41 @@ namespace MiniTerm
 
         }
 
+        private static void ForwardEnter(StreamWriter writer) {
+            if (Console.ReadKey().Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine("User pressed \"Enter\"");
+            }
+        }
+
+
+        /*private void OnKeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                Console.Write("Press Enter to continue!")
+            }
+        }*/
+
         /// <summary>
         /// Reads PseudoConsole output and copies it to the terminal's standard out.
         /// </summary>
         /// <param name="outputReadSide">the "read" side of the pseudo console output pipe</param>
         private void CopyPipeToOutput(SafeFileHandle outputReadSide)
         {
+
+            /*using (var terminalOutput = Console.OpenStandardOutput())
+            using (var pseudoConsoleOutput = new CustomFileStream(outputReadSide, FileAccess.Read))
+            {
+                pseudoConsoleOutput.customCopyTo(terminalOutput);
+            }*/
+
             using (var terminalOutput = Console.OpenStandardOutput())
+            using (var pseudoConsoleOutput = new FileStream(outputReadSide, FileAccess.Read))
+            {
+                pseudoConsoleOutput.CopyTo(terminalOutput);
+            }
+            /*using (var terminalOutput = Console.OpenStandardOutput())
             using (var pseudoConsoleOutput = new FileStream(outputReadSide, FileAccess.Read))
             {
                 using (var reader = new StreamReader(pseudoConsoleOutput))
@@ -130,8 +197,8 @@ namespace MiniTerm
                 }
 
 
-            }
-            
+            }*/
+
         }
 
         private static void GetCopyPipeToOutput(SafeFileHandle outputReadSide, SafeFileHandle inputWriteSide)
